@@ -1,0 +1,1018 @@
+import { useState, useEffect, useRef } from "react";
+
+const COLORS = {
+  bg: "#0a0c14",
+  surface: "#10131f",
+  card: "#161926",
+  border: "#1e2438",
+  blue: "#1e6fff",
+  blueGlow: "#3d8bff",
+  cyan: "#00d4ff",
+  gold: "#ffd700",
+  white: "#f0f4ff",
+  muted: "#6b7a9e",
+  green: "#00e676",
+  red: "#ff4d6a",
+  purple: "#b347ff",
+};
+
+const styles = {
+  app: {
+    fontFamily: "'Segoe UI', 'Helvetica Neue', sans-serif",
+    background: COLORS.bg,
+    color: COLORS.white,
+    minHeight: "100vh",
+    maxWidth: 420,
+    margin: "0 auto",
+    position: "relative",
+    overflow: "hidden",
+  },
+  // Top Bar
+  topBar: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    background: "linear-gradient(180deg, #0a0c14ee 80%, transparent)",
+    padding: "14px 18px 10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  logo: {
+    fontSize: 22,
+    fontWeight: 900,
+    background: `linear-gradient(90deg, ${COLORS.cyan}, ${COLORS.blue})`,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    letterSpacing: -0.5,
+  },
+  logoFlag: { fontSize: 20, marginLeft: 5 },
+  topIcons: { display: "flex", gap: 16, alignItems: "center" },
+  iconBtn: {
+    background: "none",
+    border: "none",
+    color: COLORS.white,
+    fontSize: 20,
+    cursor: "pointer",
+    padding: 4,
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    background: COLORS.red,
+    color: "#fff",
+    fontSize: 9,
+    fontWeight: 700,
+    borderRadius: 10,
+    padding: "1px 4px",
+    lineHeight: 1.4,
+  },
+  // Tabs
+  tabBar: {
+    display: "flex",
+    borderBottom: `1px solid ${COLORS.border}`,
+    background: COLORS.bg,
+    overflowX: "auto",
+    scrollbarWidth: "none",
+    padding: "0 8px",
+  },
+  tab: {
+    padding: "10px 16px",
+    fontSize: 13,
+    fontWeight: 600,
+    color: COLORS.muted,
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    borderBottom: "2px solid transparent",
+    transition: "all 0.2s",
+  },
+  tabActive: {
+    color: COLORS.cyan,
+    borderBottom: `2px solid ${COLORS.cyan}`,
+  },
+  // Feed
+  feedContainer: {
+    padding: "0 0 80px",
+  },
+  storyBar: {
+    display: "flex",
+    gap: 12,
+    padding: "14px 16px",
+    overflowX: "auto",
+    scrollbarWidth: "none",
+  },
+  storyItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 5,
+    cursor: "pointer",
+  },
+  storyRing: {
+    width: 60,
+    height: 60,
+    borderRadius: "50%",
+    padding: 2,
+    background: `linear-gradient(135deg, ${COLORS.cyan}, ${COLORS.blue}, ${COLORS.purple})`,
+  },
+  storyAvatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "50%",
+    background: COLORS.card,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 22,
+    border: `2px solid ${COLORS.bg}`,
+  },
+  storyName: { fontSize: 10, color: COLORS.muted, maxWidth: 60, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  // Post Card
+  postCard: {
+    background: COLORS.surface,
+    marginBottom: 8,
+    borderRadius: 0,
+  },
+  postHeader: {
+    display: "flex",
+    alignItems: "center",
+    padding: "12px 14px",
+    gap: 10,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: "50%",
+    background: COLORS.card,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18,
+    flexShrink: 0,
+    border: `2px solid ${COLORS.border}`,
+  },
+  avatarVip: {
+    border: `2px solid ${COLORS.gold}`,
+    boxShadow: `0 0 8px ${COLORS.gold}44`,
+  },
+  postMeta: { flex: 1 },
+  postUsername: { fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", gap: 5 },
+  vipBadge: {
+    background: `linear-gradient(90deg, ${COLORS.gold}, #ffaa00)`,
+    color: "#000",
+    fontSize: 9,
+    fontWeight: 800,
+    padding: "1px 5px",
+    borderRadius: 4,
+  },
+  postTime: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  followBtn: {
+    background: `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.cyan})`,
+    color: "#fff",
+    border: "none",
+    borderRadius: 20,
+    padding: "5px 14px",
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  postMedia: {
+    width: "100%",
+    aspectRatio: "16/9",
+    background: `linear-gradient(135deg, ${COLORS.card}, #0d1530)`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+  postMediaEmoji: { fontSize: 60, opacity: 0.6 },
+  playOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(0,0,0,0.3)",
+  },
+  playBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.15)",
+    backdropFilter: "blur(4px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 22,
+    border: "2px solid rgba(255,255,255,0.3)",
+  },
+  postBody: { padding: "10px 14px 6px" },
+  postText: { fontSize: 13.5, lineHeight: 1.5, color: COLORS.white },
+  postActions: {
+    display: "flex",
+    padding: "8px 14px 12px",
+    gap: 20,
+    borderTop: `1px solid ${COLORS.border}`,
+    marginTop: 8,
+  },
+  actionBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+    background: "none",
+    border: "none",
+    color: COLORS.muted,
+    fontSize: 13,
+    cursor: "pointer",
+    transition: "color 0.2s",
+  },
+  actionLiked: { color: COLORS.red },
+  // Live Section
+  liveContainer: { padding: "0 0 80px" },
+  liveBanner: {
+    background: `linear-gradient(135deg, #1a0030, #0a0c14, #001a3a)`,
+    padding: "20px 16px",
+    textAlign: "center",
+    borderBottom: `1px solid ${COLORS.border}`,
+  },
+  liveBannerTitle: { fontSize: 26, fontWeight: 900, letterSpacing: -0.5 },
+  liveBannerSub: { color: COLORS.muted, fontSize: 13, marginTop: 4 },
+  liveGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
+    padding: 12,
+  },
+  liveCard: {
+    borderRadius: 12,
+    overflow: "hidden",
+    position: "relative",
+    cursor: "pointer",
+    aspectRatio: "9/16",
+    background: COLORS.card,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  liveBg: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 60,
+    opacity: 0.3,
+  },
+  liveTag: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    background: COLORS.red,
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: 800,
+    padding: "2px 7px",
+    borderRadius: 4,
+    letterSpacing: 0.5,
+    animation: "pulse 1.5s infinite",
+  },
+  liveViewers: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    background: "rgba(0,0,0,0.6)",
+    color: "#fff",
+    fontSize: 10,
+    padding: "2px 6px",
+    borderRadius: 10,
+  },
+  liveInfo: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    background: "linear-gradient(transparent, rgba(0,0,0,0.8))",
+    padding: "20px 8px 8px",
+  },
+  liveName: { fontWeight: 700, fontSize: 12 },
+  liveTitle: { color: COLORS.muted, fontSize: 10, marginTop: 2 },
+  // Wallet Section
+  walletContainer: { padding: "16px 16px 80px" },
+  walletCard: {
+    background: `linear-gradient(135deg, #0d1f4d, #1a0a3d, #0d2940)`,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    border: `1px solid ${COLORS.blue}33`,
+    boxShadow: `0 8px 32px ${COLORS.blue}22`,
+  },
+  walletLabel: { color: COLORS.muted, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 },
+  walletBalance: { fontSize: 38, fontWeight: 900, marginTop: 6, letterSpacing: -1 },
+  walletSub: { color: COLORS.muted, fontSize: 13, marginTop: 4 },
+  walletActions: { display: "flex", gap: 10, marginTop: 16 },
+  walletBtn: {
+    flex: 1,
+    padding: "10px 0",
+    borderRadius: 12,
+    border: "none",
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  walletBtnPrimary: {
+    background: `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.cyan})`,
+    color: "#fff",
+  },
+  walletBtnSecondary: {
+    background: COLORS.card,
+    color: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
+  },
+  earningsRow: {
+    background: COLORS.surface,
+    borderRadius: 14,
+    padding: "14px 16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    border: `1px solid ${COLORS.border}`,
+  },
+  earningIcon: { fontSize: 20, marginRight: 12 },
+  earningLabel: { fontWeight: 600, fontSize: 14 },
+  earningDesc: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  earningAmount: { fontWeight: 800, fontSize: 16, color: COLORS.green },
+  // Market Section
+  marketContainer: { padding: "12px 12px 80px" },
+  marketCategories: {
+    display: "flex",
+    gap: 8,
+    overflowX: "auto",
+    scrollbarWidth: "none",
+    marginBottom: 12,
+    paddingBottom: 4,
+  },
+  catBtn: {
+    padding: "6px 14px",
+    borderRadius: 20,
+    border: `1px solid ${COLORS.border}`,
+    background: COLORS.card,
+    color: COLORS.muted,
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    flexShrink: 0,
+  },
+  catBtnActive: {
+    background: `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.cyan})`,
+    color: "#fff",
+    border: "none",
+  },
+  productGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 10,
+  },
+  productCard: {
+    background: COLORS.surface,
+    borderRadius: 14,
+    overflow: "hidden",
+    border: `1px solid ${COLORS.border}`,
+    cursor: "pointer",
+  },
+  productImg: {
+    height: 110,
+    background: COLORS.card,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 44,
+  },
+  productInfo: { padding: "8px 10px 10px" },
+  productName: { fontWeight: 700, fontSize: 13 },
+  productSeller: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  productPrice: { color: COLORS.cyan, fontWeight: 800, fontSize: 15, marginTop: 6 },
+  // Profile
+  profileContainer: { padding: "0 0 80px" },
+  profileHeader: {
+    background: `linear-gradient(180deg, #0d1f4d, ${COLORS.bg})`,
+    padding: "24px 16px 16px",
+    textAlign: "center",
+  },
+  profileAvatarWrap: {
+    width: 80,
+    height: 80,
+    margin: "0 auto 10px",
+    borderRadius: "50%",
+    padding: 3,
+    background: `linear-gradient(135deg, ${COLORS.cyan}, ${COLORS.purple})`,
+  },
+  profileAvatarInner: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "50%",
+    background: COLORS.card,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 36,
+    border: `3px solid ${COLORS.bg}`,
+  },
+  profileName: { fontWeight: 900, fontSize: 20 },
+  profileUsername: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
+  profileBio: { color: COLORS.white, fontSize: 13, marginTop: 8, lineHeight: 1.5 },
+  profileStats: { display: "flex", justifyContent: "center", gap: 32, marginTop: 16 },
+  statItem: { textAlign: "center" },
+  statNum: { fontWeight: 900, fontSize: 18 },
+  statLabel: { color: COLORS.muted, fontSize: 11, marginTop: 2 },
+  profileEditBtn: {
+    margin: "14px auto 0",
+    display: "block",
+    padding: "9px 32px",
+    borderRadius: 24,
+    border: `1px solid ${COLORS.border}`,
+    background: COLORS.card,
+    color: COLORS.white,
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  vipCard: {
+    margin: "0 16px 12px",
+    background: `linear-gradient(135deg, #2a1a00, #1a1000)`,
+    borderRadius: 14,
+    padding: "14px 16px",
+    border: `1px solid ${COLORS.gold}44`,
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
+  vipCardIcon: { fontSize: 30 },
+  vipCardTitle: { fontWeight: 800, color: COLORS.gold, fontSize: 15 },
+  vipCardSub: { color: "#aa8800", fontSize: 12, marginTop: 2 },
+  vipUpgradeBtn: {
+    marginLeft: "auto",
+    background: `linear-gradient(90deg, ${COLORS.gold}, #ffaa00)`,
+    color: "#000",
+    border: "none",
+    borderRadius: 20,
+    padding: "6px 14px",
+    fontWeight: 800,
+    fontSize: 12,
+    cursor: "pointer",
+  },
+  // Bottom Nav
+  bottomNav: {
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "100%",
+    maxWidth: 420,
+    background: COLORS.surface,
+    borderTop: `1px solid ${COLORS.border}`,
+    display: "flex",
+    justifyContent: "space-around",
+    padding: "8px 0 12px",
+    zIndex: 200,
+  },
+  navItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 3,
+    cursor: "pointer",
+    padding: "2px 12px",
+    background: "none",
+    border: "none",
+    color: COLORS.muted,
+    transition: "color 0.2s",
+  },
+  navItemActive: { color: COLORS.cyan },
+  navIcon: { fontSize: 22 },
+  navLabel: { fontSize: 9, fontWeight: 600, letterSpacing: 0.3 },
+  navPostBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.cyan})`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 24,
+    border: "none",
+    cursor: "pointer",
+    boxShadow: `0 4px 16px ${COLORS.blue}66`,
+    marginTop: -16,
+  },
+};
+
+const STORIES = [
+  { name: "Ou", emoji: "➕", isAdd: true },
+  { name: "Marie", emoji: "👩🏾" },
+  { name: "Jean", emoji: "👨🏿" },
+  { name: "Kenza", emoji: "👩🏽" },
+  { name: "Dady", emoji: "👨🏾" },
+  { name: "Lucie", emoji: "👩🏿" },
+  { name: "Boss", emoji: "👑" },
+];
+
+const POSTS = [
+  {
+    id: 1, user: "Marie Lucie", handle: "@marielucie", emoji: "👩🏾", vip: true, time: "2 min",
+    type: "video", mediaEmoji: "🎵",
+    text: "Gade nouvo video mwen sou kijan pou touche $500 pa semèn online 🔥 #RezoHaiti #MoneyOnline",
+    likes: 1420, comments: 89, shares: 234, liked: false,
+  },
+  {
+    id: 2, user: "Jean Boss", handle: "@jeanboss", emoji: "👨🏿", vip: false, time: "15 min",
+    type: "image", mediaEmoji: "🏔️",
+    text: "Bèl maten Ayiti 🇭🇹 Leve kanpe, fè kòb, chanje vi w! Rezo Haïti bay tout moun chans.",
+    likes: 876, comments: 45, shares: 102, liked: true,
+  },
+  {
+    id: 3, user: "TechKing Haiti", handle: "@techkinghaiti", emoji: "👨🏾", vip: true, time: "1h",
+    type: "text", mediaEmoji: null,
+    text: "🚀 Tip jodi a: Itilize referral link ou chak jou! Chak zanmi ou envite = BONUS pou ou. Mwen genyen 250 referrals deja 💰",
+    likes: 3210, comments: 178, shares: 567, liked: false,
+  },
+];
+
+const LIVES = [
+  { name: "DJ Ayiti", title: "Mizik Live 🎶", viewers: "2.4K", emoji: "🎧", color: "#1a0040" },
+  { name: "Biznis Coach", title: "Aprann touche kòb", viewers: "1.8K", emoji: "💼", color: "#0d2000" },
+  { name: "Beauté Haiti", title: "Tutorial makeup", viewers: "956", emoji: "💄", color: "#300020" },
+  { name: "Chef Marie", title: "Cuisine Haïtienne", viewers: "1.2K", emoji: "🍳", color: "#2a1500" },
+];
+
+const EARNINGS = [
+  { icon: "🎬", label: "Contenu Viral", desc: "Pa post + views", amount: "+125 HTG" },
+  { icon: "👥", label: "Parrainage", desc: "Pa moun invité", amount: "+80 HTG" },
+  { icon: "📺", label: "Publicité", desc: "Pa vidéo gade", amount: "+15 HTG" },
+  { icon: "🛒", label: "Vant", desc: "Komisyon marketplace", amount: "+200 HTG" },
+  { icon: "🎮", label: "Jwèt", desc: "Bonus winner", amount: "+50 HTG" },
+];
+
+const PRODUCTS = [
+  { emoji: "👗", name: "Robe Élégante", seller: "FashionHT", price: "1,500 HTG" },
+  { emoji: "📱", name: "iPhone 14", seller: "TechShop", price: "45,000 HTG" },
+  { emoji: "👟", name: "Nike Air Max", seller: "ShoesHT", price: "8,000 HTG" },
+  { emoji: "🎨", name: "Logo Design", seller: "DesignPro", price: "2,500 HTG" },
+  { emoji: "💎", name: "VIP Package", seller: "RezoHaïti", price: "1,000 HTG" },
+  { emoji: "🖥️", name: "Laptop HP", seller: "ITStore", price: "55,000 HTG" },
+];
+
+const NAV_ITEMS = [
+  { id: "feed", icon: "🏠", label: "Akèy" },
+  { id: "live", icon: "📡", label: "Live" },
+  { id: "post", icon: null, label: "" },
+  { id: "market", icon: "🛒", label: "Boutik" },
+  { id: "profile", icon: "👤", label: "Profil" },
+];
+
+export default function RezoHaiti() {
+  const [tab, setTab] = useState("feed");
+  const [feedTab, setFeedTab] = useState("Pou Ou");
+  const [marketCat, setMarketCat] = useState("Tout");
+  const [posts, setPosts] = useState(POSTS);
+  const [likes, setLikes] = useState({});
+  const [walletBalance] = useState(12500);
+  const [coins] = useState(3840);
+
+  const toggleLike = (id) => {
+    setPosts(prev => prev.map(p =>
+      p.id === id
+        ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
+        : p
+    ));
+  };
+
+  const formatNum = (n) => n >= 1000 ? (n / 1000).toFixed(1) + "K" : n;
+
+  return (
+    <div style={styles.app}>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 8px #00d4ff44} 50%{box-shadow:0 0 20px #00d4ff88} }
+        ::-webkit-scrollbar { display: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+      `}</style>
+
+      {/* TOP BAR */}
+      <div style={styles.topBar}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span style={styles.logo}>Rezo Haïti</span>
+          <span style={styles.logoFlag}>🇭🇹</span>
+        </div>
+        <div style={styles.topIcons}>
+          <button style={styles.iconBtn}>🔍</button>
+          <button style={{ ...styles.iconBtn, position: "relative" }}>
+            🔔
+            <span style={styles.badge}>5</span>
+          </button>
+          <button style={{ ...styles.iconBtn, position: "relative" }}>
+            💬
+            <span style={styles.badge}>3</span>
+          </button>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div style={{ overflowY: "auto", height: "calc(100vh - 60px)", paddingBottom: 70 }}>
+        {tab === "feed" && (
+          <div style={styles.feedContainer}>
+            {/* Feed Tabs */}
+            <div style={styles.tabBar}>
+              {["Pou Ou", "Ap Suivre", "Trending", "Ayiti"].map(t => (
+                <button
+                  key={t}
+                  style={{ ...styles.tab, ...(feedTab === t ? styles.tabActive : {}) }}
+                  onClick={() => setFeedTab(t)}
+                >{t}</button>
+              ))}
+            </div>
+
+            {/* Stories */}
+            <div style={styles.storyBar}>
+              {STORIES.map((s, i) => (
+                <div key={i} style={styles.storyItem}>
+                  <div style={styles.storyRing}>
+                    <div style={styles.storyAvatar}>{s.emoji}</div>
+                  </div>
+                  <span style={styles.storyName}>{s.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Posts */}
+            {posts.map(post => (
+              <div key={post.id} style={styles.postCard}>
+                <div style={styles.postHeader}>
+                  <div style={{ ...styles.avatar, ...(post.vip ? styles.avatarVip : {}) }}>
+                    {post.emoji}
+                  </div>
+                  <div style={styles.postMeta}>
+                    <div style={styles.postUsername}>
+                      {post.user}
+                      {post.vip && <span style={styles.vipBadge}>VIP 👑</span>}
+                    </div>
+                    <div style={styles.postTime}>{post.handle} · {post.time}</div>
+                  </div>
+                  <button style={styles.followBtn}>+ Suiv</button>
+                </div>
+
+                {post.mediaEmoji && (
+                  <div style={styles.postMedia}>
+                    <span style={styles.postMediaEmoji}>{post.mediaEmoji}</span>
+                    {post.type === "video" && (
+                      <div style={styles.playOverlay}>
+                        <div style={styles.playBtn}>▶</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={styles.postBody}>
+                  <p style={styles.postText}>{post.text}</p>
+                </div>
+
+                <div style={styles.postActions}>
+                  <button
+                    style={{ ...styles.actionBtn, ...(post.liked ? styles.actionLiked : {}) }}
+                    onClick={() => toggleLike(post.id)}
+                  >
+                    {post.liked ? "❤️" : "🤍"} {formatNum(post.likes)}
+                  </button>
+                  <button style={styles.actionBtn}>💬 {post.comments}</button>
+                  <button style={styles.actionBtn}>↗️ {post.shares}</button>
+                  <button style={{ ...styles.actionBtn, marginLeft: "auto" }}>⋯</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "live" && (
+          <div style={styles.liveContainer}>
+            <div style={styles.liveBanner}>
+              <div style={styles.liveBannerTitle}>
+                <span style={{ color: COLORS.red }}>● </span>
+                <span style={{ background: `linear-gradient(90deg,${COLORS.cyan},${COLORS.blue})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                  LIVE KOUNYE A
+                </span>
+              </div>
+              <div style={styles.liveBannerSub}>4 moun ap fè live · 8,340 viewers total</div>
+            </div>
+
+            <div style={styles.liveGrid}>
+              {LIVES.map((live, i) => (
+                <div key={i} style={{ ...styles.liveCard, background: live.color }}>
+                  <div style={styles.liveBg}>{live.emoji}</div>
+                  <span style={styles.liveTag}>🔴 LIVE</span>
+                  <span style={styles.liveViewers}>👁 {live.viewers}</span>
+                  <div style={styles.liveInfo}>
+                    <div style={styles.liveName}>{live.name}</div>
+                    <div style={styles.liveTitle}>{live.title}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Go Live Button */}
+            <div style={{ padding: "0 16px" }}>
+              <button style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 14,
+                background: `linear-gradient(90deg, ${COLORS.red}, #ff6b35)`,
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: 16,
+                border: "none",
+                cursor: "pointer",
+                boxShadow: `0 6px 20px ${COLORS.red}44`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}>
+                🔴 Kòmanse Live Ou
+              </button>
+            </div>
+
+            {/* Gifts Preview */}
+            <div style={{ padding: "16px 16px 0" }}>
+              <div style={{ fontWeight: 700, marginBottom: 10, fontSize: 15 }}>🎁 Gifts Popilè</div>
+              {[
+                { icon: "🌹", name: "Rose", coins: 10 },
+                { icon: "💎", name: "Diamond", coins: 100 },
+                { icon: "🚀", name: "Rocket", coins: 500 },
+                { icon: "👑", name: "Crown", coins: 1000 },
+              ].map((g, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center",
+                  background: COLORS.surface, borderRadius: 10,
+                  padding: "10px 14px", marginBottom: 8,
+                  border: `1px solid ${COLORS.border}`,
+                }}>
+                  <span style={{ fontSize: 24, marginRight: 12 }}>{g.icon}</span>
+                  <span style={{ fontWeight: 600, flex: 1 }}>{g.name}</span>
+                  <span style={{ color: COLORS.cyan, fontWeight: 800 }}>🪙 {g.coins}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "market" && (
+          <div style={styles.marketContainer}>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontWeight: 900, fontSize: 20, marginBottom: 4 }}>Marketplace 🛒</div>
+              <div style={{ color: COLORS.muted, fontSize: 13 }}>Achte ak vann fasil</div>
+            </div>
+
+            {/* Search */}
+            <div style={{
+              background: COLORS.card,
+              borderRadius: 12,
+              padding: "10px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 14,
+              border: `1px solid ${COLORS.border}`,
+            }}>
+              <span>🔍</span>
+              <span style={{ color: COLORS.muted, fontSize: 13 }}>Chèche pwodwi...</span>
+            </div>
+
+            {/* Categories */}
+            <div style={styles.marketCategories}>
+              {["Tout", "Rad 👗", "Telefòn 📱", "Soulye 👟", "Digital 🎨", "Crypto 💰"].map(c => (
+                <button
+                  key={c}
+                  style={{ ...styles.catBtn, ...(marketCat === c ? styles.catBtnActive : {}) }}
+                  onClick={() => setMarketCat(c)}
+                >{c}</button>
+              ))}
+            </div>
+
+            {/* Products */}
+            <div style={styles.productGrid}>
+              {PRODUCTS.map((p, i) => (
+                <div key={i} style={styles.productCard}>
+                  <div style={styles.productImg}>{p.emoji}</div>
+                  <div style={styles.productInfo}>
+                    <div style={styles.productName}>{p.name}</div>
+                    <div style={styles.productSeller}>🏪 {p.seller}</div>
+                    <div style={styles.productPrice}>{p.price}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "wallet" && (
+          <div style={styles.walletContainer}>
+            <div style={{ fontWeight: 900, fontSize: 20, marginBottom: 14 }}>Wallet 💳</div>
+
+            {/* Balance Card */}
+            <div style={styles.walletCard}>
+              <div style={styles.walletLabel}>Balans Total</div>
+              <div style={styles.walletBalance}>
+                {walletBalance.toLocaleString()}
+                <span style={{ fontSize: 16, fontWeight: 400, color: COLORS.muted }}> HTG</span>
+              </div>
+              <div style={styles.walletSub}>≈ ${(walletBalance / 130).toFixed(2)} USD · 🪙 {coins.toLocaleString()} Coins</div>
+              <div style={styles.walletActions}>
+                <button style={{ ...styles.walletBtn, ...styles.walletBtnPrimary }}>⬇️ Retire</button>
+                <button style={{ ...styles.walletBtn, ...styles.walletBtnSecondary }}>➕ Deposé</button>
+                <button style={{ ...styles.walletBtn, ...styles.walletBtnSecondary }}>📤 Voye</button>
+              </div>
+            </div>
+
+            {/* Methods */}
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, color: COLORS.muted }}>METÒD RETRAIT</div>
+            {[
+              { icon: "📱", name: "MonCash", min: "500 HTG" },
+              { icon: "💳", name: "NatCash", min: "500 HTG" },
+              { icon: "🌐", name: "PayPal", min: "$5 USD" },
+              { icon: "₿", name: "Crypto USDT", min: "$5 USD" },
+            ].map((m, i) => (
+              <div key={i} style={{
+                ...styles.earningsRow,
+                cursor: "pointer",
+              }}>
+                <span style={styles.earningIcon}>{m.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={styles.earningLabel}>{m.name}</div>
+                  <div style={styles.earningDesc}>Min: {m.min}</div>
+                </div>
+                <span style={{ color: COLORS.muted }}>›</span>
+              </div>
+            ))}
+
+            {/* How to Earn */}
+            <div style={{ fontWeight: 700, fontSize: 14, margin: "16px 0 10px", color: COLORS.muted }}>KIJAN POU TOUCHE</div>
+            {EARNINGS.map((e, i) => (
+              <div key={i} style={styles.earningsRow}>
+                <span style={styles.earningIcon}>{e.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={styles.earningLabel}>{e.label}</div>
+                  <div style={styles.earningDesc}>{e.desc}</div>
+                </div>
+                <span style={styles.earningAmount}>{e.amount}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "profile" && (
+          <div style={styles.profileContainer}>
+            <div style={styles.profileHeader}>
+              <div style={styles.profileAvatarWrap}>
+                <div style={styles.profileAvatarInner}>👤</div>
+              </div>
+              <div style={styles.profileName}>Ou menm 🇭🇹</div>
+              <div style={styles.profileUsername}>@username · Manm depi Jen 2025</div>
+              <div style={styles.profileBio}>Ap kreye kontni, ap bati rèv mwen sou Rezo Haïti 🔥</div>
+              <div style={styles.profileStats}>
+                <div style={styles.statItem}>
+                  <div style={styles.statNum}>0</div>
+                  <div style={styles.statLabel}>Posts</div>
+                </div>
+                <div style={styles.statItem}>
+                  <div style={styles.statNum}>0</div>
+                  <div style={styles.statLabel}>Abonnés</div>
+                </div>
+                <div style={styles.statItem}>
+                  <div style={styles.statNum}>0</div>
+                  <div style={styles.statLabel}>Ap Suiv</div>
+                </div>
+              </div>
+              <button style={styles.profileEditBtn}>✏️ Edite Profil</button>
+            </div>
+
+            {/* VIP Card */}
+            <div style={styles.vipCard}>
+              <span style={styles.vipCardIcon}>👑</span>
+              <div>
+                <div style={styles.vipCardTitle}>Vin VIP Jounen an</div>
+                <div style={styles.vipCardSub}>Badge · Revni ×2 · IA · Live HD</div>
+              </div>
+              <button style={styles.vipUpgradeBtn}>Upgrade</button>
+            </div>
+
+            {/* Referral */}
+            <div style={{
+              margin: "0 16px 12px",
+              background: COLORS.surface,
+              borderRadius: 14,
+              padding: "14px 16px",
+              border: `1px solid ${COLORS.border}`,
+            }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>🔗 Referral Link Ou</div>
+              <div style={{
+                background: COLORS.card,
+                borderRadius: 8,
+                padding: "8px 12px",
+                fontSize: 12,
+                color: COLORS.muted,
+                marginBottom: 10,
+                fontFamily: "monospace",
+              }}>
+                rezohaiti.ht/ref/username
+              </div>
+              <button style={{
+                width: "100%",
+                padding: "9px",
+                borderRadius: 10,
+                background: `linear-gradient(90deg, ${COLORS.blue}, ${COLORS.cyan})`,
+                color: "#fff",
+                fontWeight: 700,
+                border: "none",
+                fontSize: 13,
+                cursor: "pointer",
+              }}>
+                📋 Kopye & Pataje
+              </button>
+            </div>
+
+            {/* Menu */}
+            {[
+              { icon: "🎮", label: "Mini Jwèt" },
+              { icon: "🤖", label: "AI Assistant (VIP)" },
+              { icon: "⚙️", label: "Paramèt" },
+              { icon: "🔒", label: "Sécurité" },
+              { icon: "📞", label: "Sipò" },
+            ].map((item, i) => (
+              <div key={i} style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "14px 20px",
+                borderBottom: `1px solid ${COLORS.border}`,
+                cursor: "pointer",
+                gap: 14,
+              }}>
+                <span style={{ fontSize: 20 }}>{item.icon}</span>
+                <span style={{ fontWeight: 600, flex: 1 }}>{item.label}</span>
+                <span style={{ color: COLORS.muted }}>›</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* BOTTOM NAV */}
+      <div style={styles.bottomNav}>
+        {NAV_ITEMS.map((item) => {
+          if (item.id === "post") return (
+            <button key="post" style={styles.navPostBtn} onClick={() => {}}>➕</button>
+          );
+          const isActive = tab === item.id || (item.id === "wallet" && tab === "wallet");
+          return (
+            <button
+              key={item.id}
+              style={{ ...styles.navItem, ...(tab === item.id ? styles.navItemActive : {}) }}
+              onClick={() => setTab(item.id === "market" ? "market" : item.id === "profile" ? "profile" : item.id === "live" ? "live" : item.id)}
+            >
+              <span style={styles.navIcon}>{item.icon}</span>
+              <span style={styles.navLabel}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Floating Wallet Button */}
+      <button
+        onClick={() => setTab("wallet")}
+        style={{
+          position: "fixed",
+          bottom: 80,
+          right: 16,
+          background: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.cyan})`,
+          color: "#fff",
+          border: "none",
+          borderRadius: 24,
+          padding: "8px 14px",
+          fontWeight: 700,
+          fontSize: 12,
+          cursor: "pointer",
+          boxShadow: `0 4px 16px ${COLORS.blue}66`,
+          animation: "glow 2s infinite",
+          zIndex: 150,
+          maxWidth: 420,
+        }}
+      >
+        💰 {walletBalance.toLocaleString()} HTG
+      </button>
+    </div>
+  );
+}
